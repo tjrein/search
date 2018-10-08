@@ -31,7 +31,6 @@ def add_pattern_to_move(piece_inds, pattern, state):
 def check_possible_moves(piece, piece_inds, state):
     directions = ('u', 'd', 'l', 'r')
     possible_moves = []
-    row, col = piece_inds
 
     move_patterns = {
         'u': [-1, 0],
@@ -44,26 +43,63 @@ def check_possible_moves(piece, piece_inds, state):
         pattern = move_patterns[direction]
 
         if add_pattern_to_move(piece_inds, pattern, state):
+            print "HEYHEYHEYHEYHEYHEYHEYHE"
             possible_moves.append((piece, direction))
+            print "POSSIBLE_MOVES", possible_moves
 
-    print possible_moves
+    print "POSSIBLE", possible_moves
+    return possible_moves
+
+
+def select_all_pieces(state):
+    pieces = []
+    for row in state:
+        for piece in row:
+            if piece not in pieces and piece > 1:
+                pieces.append(piece)
+
+    return pieces
 
 def validate_move(state):
-    chosen_piece = 2
-    valid_moves = []
+    pieces = select_all_pieces(state)
+    chosen_piece = 3
 
-    piece_inds = []
+    piece_dict = {}
+
 
     pprint(state)
 
     for i, row in enumerate(state):
         for j, piece in enumerate(row):
-            if piece == chosen_piece:
-                piece_inds.append((i, j))
+            if piece in pieces:
+                print "FUCK FUCK FUCK FUCK"
+                print piece
+                if piece in piece_dict:
+                    piece_dict[piece].append((i,j))
+                else:
+                    piece_dict[piece] = [(i, j)]
+
+    print piece_dict
+
+    valid_moves = []
+
+    for piece, piece_inds in piece_dict.items():
+        possible_moves = check_possible_moves(piece, piece_inds, state)
+        print possible_moves
+
+        if len(possible_moves):
+            valid_moves.append(possible_moves)
 
 
-    check_possible_moves(chosen_piece, piece_inds, state)
 
+
+
+    #valid_moves = check_possible_moves(pieces, piece_inds, state)
+
+    print valid_moves
+
+    for i in valid_moves:
+        print i
 
     return valid_moves
 
@@ -94,7 +130,7 @@ def load_file(filename):
 
     dimensions = initial_state.pop(0)
     clone = clone_state(initial_state)
-    #display_state(dimensions, clone)
+
 
     validate_move(clone)
 
