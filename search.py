@@ -12,17 +12,9 @@ def add_pattern_to_move(piece_inds, pattern, state):
     for inds in piece_inds:
         row, col = inds
         new_location = [row + pattern[0], col + pattern[1]]
-        print "pattern", pattern
-        print "inds", inds
-        print "new location", new_location
 
         cell_val = state[new_location[0]][new_location[1]]
-        print '\n'
-        print "cell_val", cell_val
-        print "state item", state[row][col]
-
         if cell_val != 0 and cell_val != state[row][col]:
-            print "HOW YA DOING THEN"
             return False
 
     return True
@@ -30,7 +22,7 @@ def add_pattern_to_move(piece_inds, pattern, state):
 
 def check_possible_moves(piece, piece_inds, state):
     directions = ('u', 'd', 'l', 'r')
-    possible_moves = []
+    moves = []
 
     move_patterns = {
         'u': [-1, 0],
@@ -43,12 +35,11 @@ def check_possible_moves(piece, piece_inds, state):
         pattern = move_patterns[direction]
 
         if add_pattern_to_move(piece_inds, pattern, state):
-            print "HEYHEYHEYHEYHEYHEYHEYHE"
-            possible_moves.append((piece, direction))
-            print "POSSIBLE_MOVES", possible_moves
+            moves.append((piece, direction))
 
-    print "POSSIBLE", possible_moves
-    return possible_moves
+
+    print "POSSIBLE MOVES IN CHECK POSSIBLE MOVES", moves
+    return moves
 
 
 def select_all_pieces(state):
@@ -62,7 +53,6 @@ def select_all_pieces(state):
 
 def validate_move(state):
     pieces = select_all_pieces(state)
-    chosen_piece = 3
 
     piece_dict = {}
 
@@ -72,36 +62,29 @@ def validate_move(state):
     for i, row in enumerate(state):
         for j, piece in enumerate(row):
             if piece in pieces:
-                print "FUCK FUCK FUCK FUCK"
-                print piece
                 if piece in piece_dict:
                     piece_dict[piece].append((i,j))
                 else:
                     piece_dict[piece] = [(i, j)]
 
-    print piece_dict
 
-    valid_moves = []
+    print "PIECE_DICT", piece_dict
+    possible_moves = []
 
     for piece, piece_inds in piece_dict.items():
-        possible_moves = check_possible_moves(piece, piece_inds, state)
-        print possible_moves
+        print piece, piece_inds
+        possible_moves += check_possible_moves(piece, piece_inds, state)
+        print "POSSIBLE_MOVES", possible_moves
 
-        if len(possible_moves):
-            valid_moves.append(possible_moves)
-
-
+        #if len(possible_moves):
+        #    valid_moves.append(possible_moves)
 
 
 
     #valid_moves = check_possible_moves(pieces, piece_inds, state)
 
-    print valid_moves
 
-    for i in valid_moves:
-        print i
-
-    return valid_moves
+    return possible_moves
 
 def is_complete(state):
     for row in state:
