@@ -19,8 +19,13 @@ def add_pattern_to_move(piece_inds, pattern, state):
 
     return True
 
-#def check_move_for_piece(piece, state):
-         
+def check_move_for_piece(state, piece, pieces):
+
+    indices = pieces.get(piece)
+
+    valid_moves = check_possible_moves(piece, indices, state)
+
+    return valid_moves
 
 def check_possible_moves(piece, piece_inds, state):
     directions = ('u', 'd', 'l', 'r')
@@ -41,8 +46,7 @@ def check_possible_moves(piece, piece_inds, state):
 
     return moves
 
-
-def select_all_pieces(state):
+def get_all_pieces(state):
     pieces = {}
 
     for i, row in enumerate(state):
@@ -55,17 +59,13 @@ def select_all_pieces(state):
 
     return pieces
 
-def validate_moves(state):
-    pieces = select_all_pieces(state)
-    piece_dict = pieces
+def validate_moves(state, pieces):
     pprint(state)
 
-    print "PIECE_DICT", piece_dict
     possible_moves = []
 
     for piece, indices in pieces.items():
         possible_moves += check_possible_moves(piece, indices, state)
-        print "POSSIBLE_MOVES", possible_moves
 
     return possible_moves
 
@@ -96,8 +96,11 @@ def load_file(filename):
 
     dimensions = initial_state.pop(0)
     clone = clone_state(initial_state)
+    pieces = get_all_pieces(clone)
+    
+    valid_moves = validate_moves(clone, pieces)
 
-    validate_moves(clone)
+    moves_for_piece = check_move_for_piece(clone, 4, pieces)
 
 def main():
     if len(sys.argv) > 1:
