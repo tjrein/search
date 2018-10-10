@@ -7,8 +7,6 @@ def pprint(state):
 
 def add_pattern_to_move(piece_inds, pattern, state):
 
-    pprint(state)
-
     for inds in piece_inds:
         row, col = inds
         new_location = [row + pattern[0], col + pattern[1]]
@@ -19,27 +17,44 @@ def add_pattern_to_move(piece_inds, pattern, state):
 
     return True
 
-def check_move_for_piece(state, piece, pieces):
-
+def apply_move(state, move, pieces):
+    piece, direction = move
+    pattern = get_move_pattern(direction)
     indices = pieces.get(piece)
 
-    valid_moves = check_possible_moves(piece, indices, state)
+    update_piece_inds = []
 
+    for ind in indices:
+        row, col = ind
+        new_row, new_col = [row+pattern[0], col+pattern[1]]
+
+        state[new_row][new_col] = piece
+        state[row][col] = 0
+        update_piece_inds.append((new_row, new_col))
+
+    pieces[piece] = update_piece_inds 
+
+def check_move_for_piece(state, piece, pieces):
+    indices = pieces.get(piece)
+    valid_moves = check_possible_moves(piece, indices, state)
     return valid_moves
 
-def check_possible_moves(piece, piece_inds, state):
-    directions = ('u', 'd', 'l', 'r')
-    moves = []
-
+def get_move_pattern(direction):
     move_patterns = {
         'u': [-1, 0],
         'd': [1, 0],
         'l': [0, -1],
         'r': [0, 1]
-    }
+    }[direction]
+
+    return move_patterns 
+
+def check_possible_moves(piece, piece_inds, state):
+    directions = ('u', 'd', 'l', 'r')
+    moves = []
 
     for direction in directions:
-        pattern = move_patterns[direction]
+        pattern = get_move_pattern(direction)
 
         if add_pattern_to_move(piece_inds, pattern, state):
             moves.append((piece, direction))
@@ -60,8 +75,6 @@ def get_all_pieces(state):
     return pieces
 
 def validate_moves(state, pieces):
-    pprint(state)
-
     possible_moves = []
 
     for piece, indices in pieces.items():
@@ -101,6 +114,12 @@ def load_file(filename):
     valid_moves = validate_moves(clone, pieces)
 
     moves_for_piece = check_move_for_piece(clone, 4, pieces)
+    test_moves = check_move_for_piece(clone, 2, pieces)
+
+    apply_move(clone, test_moves[0], pieces)
+    
+    test_moves2 = check_move_for_piece(clone, 4, pieces)
+    apply_move(clone, test_moves2[0], pieces)
 
 def main():
     if len(sys.argv) > 1:
