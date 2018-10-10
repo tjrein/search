@@ -18,6 +18,8 @@ def add_pattern_to_move(piece_inds, pattern, state):
             return False
 
     return True
+
+#def check_move_for_piece(piece, state):
          
 
 def check_possible_moves(piece, piece_inds, state):
@@ -37,52 +39,33 @@ def check_possible_moves(piece, piece_inds, state):
         if add_pattern_to_move(piece_inds, pattern, state):
             moves.append((piece, direction))
 
-
-    print "POSSIBLE MOVES IN CHECK POSSIBLE MOVES", moves
     return moves
 
 
 def select_all_pieces(state):
-    pieces = []
-    for row in state:
-        for piece in row:
-            if piece not in pieces and piece > 1:
-                pieces.append(piece)
-
-    return pieces
-
-def validate_move(state):
-    pieces = select_all_pieces(state)
-
-    piece_dict = {}
-
-
-    pprint(state)
+    pieces = {}
 
     for i, row in enumerate(state):
         for j, piece in enumerate(row):
-            if piece in pieces:
-                if piece in piece_dict:
-                    piece_dict[piece].append((i,j))
+            if piece > 1:
+                if piece in pieces:
+                    pieces[piece].append((i, j))
                 else:
-                    piece_dict[piece] = [(i, j)]
+                    pieces[piece] = [(i, j)]
 
+    return pieces
+
+def validate_moves(state):
+    pieces = select_all_pieces(state)
+    piece_dict = pieces
+    pprint(state)
 
     print "PIECE_DICT", piece_dict
     possible_moves = []
 
-    for piece, piece_inds in piece_dict.items():
-        print piece, piece_inds
-        possible_moves += check_possible_moves(piece, piece_inds, state)
+    for piece, indices in pieces.items():
+        possible_moves += check_possible_moves(piece, indices, state)
         print "POSSIBLE_MOVES", possible_moves
-
-        #if len(possible_moves):
-        #    valid_moves.append(possible_moves)
-
-
-
-    #valid_moves = check_possible_moves(pieces, piece_inds, state)
-
 
     return possible_moves
 
@@ -114,8 +97,7 @@ def load_file(filename):
     dimensions = initial_state.pop(0)
     clone = clone_state(initial_state)
 
-
-    validate_move(clone)
+    validate_moves(clone)
 
 def main():
     if len(sys.argv) > 1:
