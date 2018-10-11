@@ -1,4 +1,5 @@
 from copy import deepcopy
+import random
 import sys
 
 def pprint(state):
@@ -104,39 +105,15 @@ def clone_state(state):
 def load_file(filename):
     read_data = None
 
-    initial_state = []
+    state = []
     with open(filename, 'r') as f:
         for line in f:
             stripped_line = line.replace(',', ' ').strip().split()
             sanitized_line = [int(val) for val in stripped_line]
-            initial_state.append(sanitized_line)
+            state.append(sanitized_line)
 
-    dimensions = initial_state.pop(0)
-    clone = clone_state(initial_state)
-    pieces = get_all_pieces(clone)
+    random_walks(state, 3)
     
-    valid_moves = validate_moves(clone, pieces)
-
-    moves_for_piece = check_move_for_piece(clone, 4, pieces)
-    test_moves = check_move_for_piece(clone, 2, pieces)
-
-    #apply_move(clone, test_moves[0], pieces)
-    
-    test_moves2 = check_move_for_piece(clone, 4, pieces)
-
-    new_pieces = deepcopy(pieces)
-    #new_state = apply_move_clone(clone, test_moves2[0], new_pieces)
-
-
-    #apply_move(clone, test_moves2[0], pieces)
-
-    pprint(clone)
-    print "\n"
-
-    normalize_state(clone)
-    pprint(clone)
-
-
 def is_same_state(state, other):
     for i, row in enumerate(state):
         for j, col in enumerate(row):
@@ -162,6 +139,30 @@ def swap_index(ind_1, ind_2, state):
                 state[i][j] = ind_2
             elif state[i][j] == ind_2:
                 state[i][j] = ind_1
+
+def random_walks(state, executions):
+    clone = clone_state(state)
+    dimensions = state.pop(0)
+    
+    display_state(clone.pop(0), clone)
+    for i in range(3):
+        if is_complete(state):
+            return "Solved"
+
+        pieces = get_all_pieces(state)
+
+        valid_moves = validate_moves(state, pieces)
+        rand_int = random.randint(0, len(valid_moves) - 1)
+
+        move = valid_moves[rand_int]
+
+        apply_move(state, move, pieces)
+        print "\n" + str(move)
+        print
+        display_state(dimensions, clone_state(state))
+        #print "\n" +str(move)
+        
+
 
 def main():
     if len(sys.argv) > 1:
