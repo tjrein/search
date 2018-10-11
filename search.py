@@ -120,23 +120,22 @@ def load_file(filename):
     moves_for_piece = check_move_for_piece(clone, 4, pieces)
     test_moves = check_move_for_piece(clone, 2, pieces)
 
-    apply_move(clone, test_moves[0], pieces)
+    #apply_move(clone, test_moves[0], pieces)
     
     test_moves2 = check_move_for_piece(clone, 4, pieces)
 
     new_pieces = deepcopy(pieces)
-    new_state = apply_move_clone(clone, test_moves2[0], new_pieces)
+    #new_state = apply_move_clone(clone, test_moves2[0], new_pieces)
 
-    result = is_same_state(clone, new_state)
 
-    pprint(clone)
-
-    apply_move(clone, test_moves2[0], pieces)
-
-    result = is_same_state(clone, new_state)
+    #apply_move(clone, test_moves2[0], pieces)
 
     pprint(clone)
-    pprint(new_state)
+    print "\n"
+
+    normalize_state(clone)
+    pprint(clone)
+
 
 def is_same_state(state, other):
     for i, row in enumerate(state):
@@ -144,6 +143,25 @@ def is_same_state(state, other):
             if state[i][j] != other[i][j]:
                 return False
     return True
+
+def normalize_state(state):
+    next_ind = 3
+
+    for i, row in enumerate(state):
+        for j, col in enumerate(row):
+            if state[i][j] == next_ind:
+                next_ind += 1
+            elif state[i][j] > next_ind:
+                swap_index(next_ind, state[i][j], state)
+                next_ind += 1
+
+def swap_index(ind_1, ind_2, state):
+    for i, row in enumerate(state):
+        for j, col in enumerate(row):
+            if state[i][j] == ind_1:
+                state[i][j] = ind_2
+            elif state[i][j] == ind_2:
+                state[i][j] = ind_1
 
 def main():
     if len(sys.argv) > 1:
