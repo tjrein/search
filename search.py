@@ -5,17 +5,21 @@ def pprint(state):
     for row in state:
         print row
 
-def add_pattern_to_move(piece_inds, pattern, state):
-
+def is_valid_move(piece_inds, pattern, state):
     for inds in piece_inds:
         row, col = inds
-        new_location = [row + pattern[0], col + pattern[1]]
+        new_row, new_col = [row+pattern[0], col+pattern[1]]
+        potential_move = state[new_row][new_col]
 
-        cell_val = state[new_location[0]][new_location[1]]
-        if cell_val != 0 and cell_val != state[row][col]:
+        if potential_move != 0 and potential_move != state[row][col]:
             return False
 
     return True
+
+def apply_move_clone(state, move, pieces):
+    new_state = clone_state(state)
+    apply_move(new_state, move, pieces)
+    return new_state
 
 def apply_move(state, move, pieces):
     piece, direction = move
@@ -56,7 +60,7 @@ def check_possible_moves(piece, piece_inds, state):
     for direction in directions:
         pattern = get_move_pattern(direction)
 
-        if add_pattern_to_move(piece_inds, pattern, state):
+        if is_valid_move(piece_inds, pattern, state):
             moves.append((piece, direction))
 
     return moves
@@ -119,7 +123,27 @@ def load_file(filename):
     apply_move(clone, test_moves[0], pieces)
     
     test_moves2 = check_move_for_piece(clone, 4, pieces)
+
+    new_pieces = deepcopy(pieces)
+    new_state = apply_move_clone(clone, test_moves2[0], new_pieces)
+
+    result = is_same_state(clone, new_state)
+
+    pprint(clone)
+
     apply_move(clone, test_moves2[0], pieces)
+
+    result = is_same_state(clone, new_state)
+
+    pprint(clone)
+    pprint(new_state)
+
+def is_same_state(state, other):
+    for i, row in enumerate(state):
+        for j, col in enumerate(row):
+            if state[i][j] != other[i][j]:
+                return False
+    return True
 
 def main():
     if len(sys.argv) > 1:
