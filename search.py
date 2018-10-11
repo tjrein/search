@@ -29,13 +29,19 @@ def apply_move(state, move, pieces):
 
     update_piece_inds = []
 
+
     for ind in indices:
         row, col = ind
         new_row, new_col = [row+pattern[0], col+pattern[1]]
 
-        state[new_row][new_col] = piece
         state[row][col] = 0
+
         update_piece_inds.append((new_row, new_col))
+
+    for ind in update_piece_inds:
+        row, col = ind
+        state[row][col] = piece
+
 
     pieces[piece] = update_piece_inds 
 
@@ -156,13 +162,14 @@ def random_walks(state, executions):
 
         move = valid_moves[rand_int]
 
+        print "PIECES", pieces
+
         apply_move(state, move, pieces)
+        #normalize_state(state)
         print "\n" + str(move)
         print
         display_state(dimensions, clone_state(state))
         #print "\n" +str(move)
-        
-
 
 def main():
     if len(sys.argv) > 1:
