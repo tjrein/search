@@ -30,7 +30,6 @@ def apply_move_clone(state, move):
 def apply_move(state, move):
     pieces = get_all_pieces(state)
     piece, direction = move
-    pprint(state)
     pattern = get_move_pattern(direction)
     indices = pieces.get(piece)
 
@@ -97,17 +96,13 @@ def validate_moves(state):
     return possible_moves
 
 def is_complete(state):
-    print "WHAT IN THE SHIT MY DUDE", state
     for row in state:
         if -1 in row:
             return False
-    
-    print "SOLVED!"
-    pprint(state)
     return True
 
 def display_state(dimensions, clone):
-    clone.insert(0, dimensions)
+    print ','.join(str(val) for val in dimensions) + ','
     for row in clone:
         print ','.join(str(val) for val in row) + ','
 
@@ -124,7 +119,7 @@ def load_file(filename):
             sanitized_line = [int(val) for val in stripped_line]
             state.append(sanitized_line)
 
-    #random_walks(state, 3)
+    random_walks(clone_state(state), 3)
     dimensions = state.pop(0)
     breadth_first_search(state)
 
@@ -154,7 +149,6 @@ def breadth_first_search(state):
 
         for move in possible_moves:
             possible_state = apply_move_clone(current_state, move)
-            pprint(possible_state)
 
             normal_form = normalize_state(clone_state(possible_state))
 
@@ -170,19 +164,27 @@ def breadth_first_search(state):
 
                 frontier.append(nodes[node_id])
 
-
         current_node = frontier.popleft()
-
         parent_id = current_node["id"]
 
         if is_complete(current_node["state"]):
             return output_path(nodes, current_node["id"])
 
 def output_path(nodes, node_id):
-    while nodes[node_id]["parent"] is not None:
-        print nodes[node_id]
+    actions = []
+    finished_state = nodes[node_id]["state"]
 
+    print
+    while nodes[node_id]["parent"] is not None:
+        actions.append(nodes[node_id]["action"])
         node_id = nodes[node_id]["parent"]
+
+    actions.reverse()
+
+    for action in actions:
+        print action
+    
+    display_state((5,4), finished_state)
 
 def repeat_state(nodes, found_state):
     for node in nodes:
@@ -222,13 +224,12 @@ def swap_index(ind_1, ind_2, state):
                 state[i][j] = ind_1
 
 def random_walks(state, executions):
-    clone = clone_state(state)
     dimensions = state.pop(0)
     
-    display_state(clone.pop(0), clone)
+    display_state(dimensions, state)
     for i in range(3):
         if is_complete(state):
-            return "Solved!"
+            return
 
         pieces = get_all_pieces(state)
 
@@ -237,14 +238,9 @@ def random_walks(state, executions):
 
         move = valid_moves[rand_int]
 
-        print "PIECES", pieces
-
         apply_move(state, move)
-        #normalize_state(state)
-        print "\n" + str(move)
-        print
+        print "\n" + str(move) + "\n"
         display_state(dimensions, clone_state(state))
-        #print "\n" +str(move)
 
 def main():
     if len(sys.argv) > 1:
