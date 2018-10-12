@@ -121,6 +121,7 @@ def load_file(filename):
 
     random_walks(clone_state(state), 3)
     breadth_first_search(clone_state(state), "BFS")
+    breadth_first_search(clone_state(state), "DFS")
 
 def breadth_first_search(state, method):
     dimensions = state.pop(0)
