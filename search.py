@@ -120,10 +120,10 @@ def load_file(filename):
             state.append(sanitized_line)
 
     random_walks(clone_state(state), 3)
-    dimensions = state.pop(0)
-    breadth_first_search(state)
+    breadth_first_search(clone_state(state), "BFS")
 
-def breadth_first_search(state):
+def breadth_first_search(state, method):
+    dimensions = state.pop(0)
     frontier = deque()
     explored = []
     node_id = 0
@@ -141,16 +141,13 @@ def breadth_first_search(state):
     current_node = nodes[0]
 
     while not is_complete(current_node["state"]):
+        explored.append(current_node)
 
         current_state = current_node["state"]
-
-        explored.append(current_node)
         possible_moves = validate_moves(clone_state(current_state))
 
         for move in possible_moves:
             possible_state = apply_move_clone(current_state, move)
-
-            normal_form = normalize_state(clone_state(possible_state))
 
             if not repeat_state(explored, clone_state(possible_state)) and not repeat_state(frontier, clone_state(possible_state)):
                 node_id += 1
@@ -164,7 +161,11 @@ def breadth_first_search(state):
 
                 frontier.append(nodes[node_id])
 
-        current_node = frontier.popleft()
+        if method == "BFS":
+            current_node = frontier.popleft()
+        if method == "DFS":
+            current_node = frontier.pop()
+
         parent_id = current_node["id"]
 
         if is_complete(current_node["state"]):
@@ -232,7 +233,6 @@ def random_walks(state, executions):
             return
 
         pieces = get_all_pieces(state)
-
         valid_moves = validate_moves(state)
         rand_int = random.randint(0, len(valid_moves) - 1)
 
