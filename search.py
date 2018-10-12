@@ -2,6 +2,7 @@ from copy import deepcopy
 from collections import deque
 import random
 import sys
+import pprint
 
 def pprint(state):
     for row in state:
@@ -29,8 +30,6 @@ def apply_move_clone(state, move):
 def apply_move(state, move):
     pieces = get_all_pieces(state)
     piece, direction = move
-    print"MOVE OVER HERE", move
-    print "AND WHAT IS THE STATE"
     pprint(state)
     pattern = get_move_pattern(direction)
     indices = pieces.get(piece)
@@ -46,8 +45,6 @@ def apply_move(state, move):
     for ind in update_piece_inds:
         row, col = ind
         state[row][col] = piece
-
-    #pieces[piece] = update_piece_inds 
 
 def check_move_for_piece(state, piece):
     pieces = get_all_pieces(state)
@@ -100,14 +97,13 @@ def validate_moves(state):
     return possible_moves
 
 def is_complete(state):
-    print "WE ARE COMPLETED"
-    pprint(state)
-    print
-
+    print "WHAT IN THE SHIT MY DUDE", state
     for row in state:
         if -1 in row:
             return False
-
+    
+    print "SOLVED!"
+    pprint(state)
     return True
 
 def display_state(dimensions, clone):
@@ -134,52 +130,63 @@ def load_file(filename):
 
 def breadth_first_search(state):
     frontier = deque()
-    frontier.append(normalize_state(clone_state(state)))
-    moves = deque()
     explored = []
+    node_id = 0
+    parent_id = 0
 
-    current_state = frontier.popleft()
+    nodes = {
+        0: {
+            'state': clone_state(state),
+            'action': None,
+            'parent': None,
+            'id': 0 
+        } 
+    }
+    
+    current_node = nodes[0]
 
-    while not is_complete(current_state):
-        print "CURRENT STATE"
-        pprint(current_state)
-        print
-        explored.append(normalize_state(clone_state(current_state)))
+    while not is_complete(current_node["state"]):
 
-        print "NORMALIZED_STATE"
-        normalized_state = normalize_state(clone_state(current_state))
-        pprint(normalized_state)
+        current_state = current_node["state"]
 
-        print("EXPLORED")
-        pprint(explored)
-        print
-
+        explored.append(current_node)
         possible_moves = validate_moves(clone_state(current_state))
 
         for move in possible_moves:
-            print move
             possible_state = apply_move_clone(current_state, move)
-            normal_form = normalize_state(possible_state)
-            print "POSSIBLE_STATE"
             pprint(possible_state)
-            print 
 
-            if not repeat_state(explored, normal_form) and not repeat_state(frontier, normal_form):
-                frontier.append(possible_state)
-                moves.append(move)
+            normal_form = normalize_state(clone_state(possible_state))
 
-        move_to_apply = moves.popleft()
-        #apply_move(current_state, move_to_apply)
+            if not repeat_state(explored, clone_state(possible_state)) and not repeat_state(frontier, clone_state(possible_state)):
+                node_id += 1
 
-        current_state = frontier.popleft()
-        #move_to_apply = moves.popleft()
-        #apply_move(current_state, move_to_apply)
+                nodes[node_id] = {
+                    "state": possible_state,
+                    "parent": parent_id,
+                    "action": move,
+                    "id": node_id
+                }
+
+                frontier.append(nodes[node_id])
 
 
+        current_node = frontier.popleft()
 
-def repeat_state(state_set, found_state):
-    for state in state_set:
-        if is_same_state(state, found_state):
+        parent_id = current_node["id"]
+
+        if is_complete(current_node["state"]):
+            return output_path(nodes, current_node["id"])
+
+def output_path(nodes, node_id):
+    while nodes[node_id]["parent"] is not None:
+        print nodes[node_id]
+
+        node_id = nodes[node_id]["parent"]
+
+def repeat_state(nodes, found_state):
+    for node in nodes:
+        if is_same_state(normalize_state(node["state"]), normalize_state(found_state)):
             return True
     return False
 
@@ -194,15 +201,17 @@ def is_same_state(state, other):
 def normalize_state(state):
     next_ind = 3
 
-    for i, row in enumerate(state):
+    clone = clone_state(state)
+
+    for i, row in enumerate(clone):
         for j, col in enumerate(row):
-            if state[i][j] == next_ind:
+            if clone[i][j] == next_ind:
                 next_ind += 1
-            elif state[i][j] > next_ind:
-                swap_index(next_ind, state[i][j], state)
+            elif clone[i][j] > next_ind:
+                swap_index(next_ind, clone[i][j], clone)
                 next_ind += 1
 
-    return state
+    return clone
 
 def swap_index(ind_1, ind_2, state):
     for i, row in enumerate(state):
@@ -219,7 +228,7 @@ def random_walks(state, executions):
     display_state(clone.pop(0), clone)
     for i in range(3):
         if is_complete(state):
-            return "Solved"
+            return "Solved!"
 
         pieces = get_all_pieces(state)
 
