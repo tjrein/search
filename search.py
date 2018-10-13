@@ -119,7 +119,7 @@ def load_file(filename):
             sanitized_line = [int(val) for val in stripped_line]
             state.append(sanitized_line)
 
-    random_walks(clone_state(state), 3)
+    #random_walks(clone_state(state), 3)
     breadth_first_search(clone_state(state), "BFS")
     breadth_first_search(clone_state(state), "DFS")
 
@@ -141,12 +141,25 @@ def breadth_first_search(state, method):
     
     current_node = nodes[0]
 
-    while not is_complete(current_node["state"]):
+    frontier.append(current_node)
+
+    while frontier:
+
+        if method == "BFS":
+            current_node = frontier.popleft()
+        if method == "DFS":
+            current_node = frontier.pop()
+
+        parent_id = current_node["id"]
+        current_state = current_node["state"]
+
+        if is_complete(current_state):
+            pprint(current_state)
+            return output_path(nodes, current_node["id"])
+
         explored.append(current_node)
 
-        current_state = current_node["state"]
         possible_moves = validate_moves(clone_state(current_state))
-
         for move in possible_moves:
             possible_state = apply_move_clone(current_state, move)
 
@@ -162,19 +175,12 @@ def breadth_first_search(state, method):
 
                 frontier.append(nodes[node_id])
 
-        if method == "BFS":
-            current_node = frontier.popleft()
-        if method == "DFS":
-            current_node = frontier.pop()
-
-        parent_id = current_node["id"]
-
-        if is_complete(current_node["state"]):
-            return output_path(nodes, current_node["id"])
 
 def output_path(nodes, node_id):
     actions = []
     finished_state = nodes[node_id]["state"]
+
+    print "nodes", nodes
 
     print
     while nodes[node_id]["parent"] is not None:
