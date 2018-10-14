@@ -5,12 +5,10 @@ import sys
 import time
 
 def is_valid_move(piece_inds, pattern, state, piece):
-
     for inds in piece_inds:
         row, col = inds
         new_row, new_col = [row+pattern[0], col+pattern[1]]
         potential_move = state[new_row][new_col]
-
         win_condition = piece is 2 and potential_move is -1
 
         if potential_move != 0 and potential_move != state[row][col] and not win_condition:
@@ -117,19 +115,17 @@ def load_file(filename):
             sanitized_line = [int(val) for val in stripped_line]
             state.append(sanitized_line)
 
-    #random_walks(clone_state(state), 3)
-    #search(clone_state(state), "BFS")
-    #search(clone_state(state), "DFS")
-    #search(clone_state(state), "DFS", 5)
     breadth_first_search(clone_state(state))
     depth_first_search(clone_state(state))
+    iterative_deepening(clone_state(state))
 
 def breadth_first_search(state):
     dimensions = state.pop(0)
     nodes = {}
     start = time.time()
     goal_node = search(clone_state(state), "BFS", nodes)
-    elapsed_time = "{:.2f}".format((time.time() - start))
+    end = time.time()
+    elapsed_time = "{:.2f}".format((end - start))
     output_path(nodes, goal_node["id"], dimensions, elapsed_time)
 
 def depth_first_search(state):
@@ -137,7 +133,28 @@ def depth_first_search(state):
     nodes = {}
     start = time.time()
     goal_node = search(clone_state(state), "DFS", nodes)
-    elapsed_time = "{:.2f}".format((time.time() - start))
+    end = time.time()
+    elapsed_time = "{:.2f}".format((end - start))
+    output_path(nodes, goal_node["id"], dimensions, elapsed_time)
+
+def iterative_deepening(state):
+    dimensions = state.pop(0)
+    nodes = {}
+    start = time.time()
+    limit = 1
+
+    goal_node = None
+
+    start = time.time()
+    while True:
+        goal_node = search(clone_state(state), "DFS", nodes, limit=limit)
+        if goal_node is not None:
+            end = time.time()
+            break
+        else:
+            limit += 1
+
+    elapsed_time = "{:.2f}".format((end - start))
     output_path(nodes, goal_node["id"], dimensions, elapsed_time)
 
 def search(state, method, nodes, limit=None):
@@ -193,7 +210,7 @@ def search(state, method, nodes, limit=None):
                 frontier.append(nodes[node_id])
 
         if not frontier:
-            return current_node
+            return None
 
 def output_path(nodes, node_id, dimensions, elapsed_time):
     actions = []
