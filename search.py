@@ -93,6 +93,8 @@ def validate_moves(state):
     for piece, indices in pieces.items():
         possible_moves += check_possible_moves(piece, indices, state)
 
+    possible_moves.reverse()
+
     return possible_moves
 
 def is_complete(state):
@@ -123,7 +125,9 @@ def load_file(filename):
     breadth_first_search(clone_state(state), "BFS")
     breadth_first_search(clone_state(state), "DFS")
 
-def breadth_first_search(state, method):
+    breadth_first_search(clone_state(state), "DFS", 5)
+
+def breadth_first_search(state, method, limit=None):
     dimensions = state.pop(0)
     frontier = deque()
     explored = []
@@ -135,31 +139,33 @@ def breadth_first_search(state, method):
             'state': clone_state(state),
             'action': None,
             'parent': None,
-            'id': 0 
+            'id': 0,
+            'depth': 0
         } 
     }
-    
-    current_node = nodes[0]
 
+    current_node = nodes[0]
     frontier.append(current_node)
 
     while frontier:
-
         if method == "BFS":
             current_node = frontier.popleft()
         if method == "DFS":
             current_node = frontier.pop()
 
         parent_id = current_node["id"]
+        depth = current_node["depth"]
         current_state = current_node["state"]
 
         if is_complete(current_state):
-            pprint(current_state)
             return output_path(nodes, current_node["id"])
 
         explored.append(current_node)
 
-        possible_moves = validate_moves(clone_state(current_state))
+        possible_moves = []
+        if depth is not limit:
+            possible_moves = validate_moves(clone_state(current_state))
+
         for move in possible_moves:
             possible_state = apply_move_clone(current_state, move)
 
@@ -170,17 +176,18 @@ def breadth_first_search(state, method):
                     "state": possible_state,
                     "parent": parent_id,
                     "action": move,
-                    "id": node_id
+                    "id": node_id,
+                    "depth": depth + 1
                 }
 
                 frontier.append(nodes[node_id])
 
+        if not frontier:
+            return output_path(nodes, current_node["id"])
 
 def output_path(nodes, node_id):
     actions = []
     finished_state = nodes[node_id]["state"]
-
-    print "nodes", nodes
 
     print
     while nodes[node_id]["parent"] is not None:
@@ -193,6 +200,7 @@ def output_path(nodes, node_id):
         print action
     
     display_state((5,4), finished_state)
+    print len(nodes), len(actions)
 
 def repeat_state(nodes, found_state):
     for node in nodes:
