@@ -2,13 +2,9 @@ from copy import deepcopy
 from collections import deque
 import random
 import sys
-import pprint
+import time
 
-def pprint(state):
-    for row in state:
-        print row
-
-def is_valid_move(piece_inds, pattern, state, piece): 
+def is_valid_move(piece_inds, pattern, state, piece):
 
     for inds in piece_inds:
         row, col = inds
@@ -59,7 +55,7 @@ def get_move_pattern(direction):
         'r': [0, 1]
     }[direction]
 
-    return move_patterns 
+    return move_patterns
 
 def check_possible_moves(piece, piece_inds, state):
     directions = ('u', 'd', 'l', 'r')
@@ -122,29 +118,43 @@ def load_file(filename):
             state.append(sanitized_line)
 
     #random_walks(clone_state(state), 3)
-    breadth_first_search(clone_state(state), "BFS")
-    breadth_first_search(clone_state(state), "DFS")
+    #search(clone_state(state), "BFS")
+    #search(clone_state(state), "DFS")
+    #search(clone_state(state), "DFS", 5)
+    breadth_first_search(clone_state(state))
+    depth_first_search(clone_state(state))
 
-    breadth_first_search(clone_state(state), "DFS", 5)
-
-def breadth_first_search(state, method, limit=None):
+def breadth_first_search(state):
     dimensions = state.pop(0)
+    nodes = {}
+    start = time.time()
+    goal_node = search(clone_state(state), "BFS", nodes)
+    elapsed_time = "{:.2f}".format((time.time() - start))
+    output_path(nodes, goal_node["id"], dimensions, elapsed_time)
+
+def depth_first_search(state):
+    dimensions = state.pop(0)
+    nodes = {}
+    start = time.time()
+    goal_node = search(clone_state(state), "DFS", nodes)
+    elapsed_time = "{:.2f}".format((time.time() - start))
+    output_path(nodes, goal_node["id"], dimensions, elapsed_time)
+
+def search(state, method, nodes, limit=None):
     frontier = deque()
     explored = []
     node_id = 0
     parent_id = 0
 
-    nodes = {
-        0: {
-            'state': clone_state(state),
-            'action': None,
-            'parent': None,
-            'id': 0,
-            'depth': 0
-        } 
+    current_node = {
+        'state': clone_state(state),
+        'action': None,
+        'parent': None,
+        'id': 0,
+        'depth': 0
     }
 
-    current_node = nodes[0]
+    nodes[0] = current_node
     frontier.append(current_node)
 
     while frontier:
@@ -158,7 +168,7 @@ def breadth_first_search(state, method, limit=None):
         current_state = current_node["state"]
 
         if is_complete(current_state):
-            return output_path(nodes, current_node["id"])
+            return current_node
 
         explored.append(current_node)
 
@@ -183,9 +193,9 @@ def breadth_first_search(state, method, limit=None):
                 frontier.append(nodes[node_id])
 
         if not frontier:
-            return output_path(nodes, current_node["id"])
+            return current_node
 
-def output_path(nodes, node_id):
+def output_path(nodes, node_id, dimensions, elapsed_time):
     actions = []
     finished_state = nodes[node_id]["state"]
 
@@ -198,9 +208,9 @@ def output_path(nodes, node_id):
 
     for action in actions:
         print action
-    
-    display_state((5,4), finished_state)
-    print len(nodes), len(actions)
+
+    display_state(dimensions, finished_state)
+    print len(nodes), elapsed_time, len(actions)
 
 def repeat_state(nodes, found_state):
     for node in nodes:
@@ -208,7 +218,6 @@ def repeat_state(nodes, found_state):
             return True
     return False
 
-    
 def is_same_state(state, other):
     for i, row in enumerate(state):
         for j, col in enumerate(row):
@@ -241,13 +250,12 @@ def swap_index(ind_1, ind_2, state):
 
 def random_walks(state, executions):
     dimensions = state.pop(0)
-    
+
     display_state(dimensions, state)
-    for i in range(3):
+    for i in range(executions):
         if is_complete(state):
             return
 
-        pieces = get_all_pieces(state)
         valid_moves = validate_moves(state)
         rand_int = random.randint(0, len(valid_moves) - 1)
 
