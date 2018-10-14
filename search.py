@@ -189,9 +189,10 @@ def search(state, method, nodes, limit=None):
 
         explored.append(current_node)
 
-        possible_moves = []
-        if depth is not limit:
-            possible_moves = validate_moves(clone_state(current_state))
+        if depth is limit:
+            continue
+
+        possible_moves = validate_moves(clone_state(current_state))
 
         for move in possible_moves:
             possible_state = apply_move_clone(current_state, move)
