@@ -105,20 +105,6 @@ def display_state(dimensions, clone):
 def clone_state(state):
     return deepcopy(state)
 
-def load_file(filename):
-    read_data = None
-
-    state = []
-    with open(filename, 'r') as f:
-        for line in f:
-            stripped_line = line.replace(',', ' ').strip().split()
-            sanitized_line = [int(val) for val in stripped_line]
-            state.append(sanitized_line)
-
-    breadth_first_search(clone_state(state))
-    depth_first_search(clone_state(state))
-    iterative_deepening(clone_state(state))
-
 def breadth_first_search(state):
     dimensions = state.pop(0)
     nodes = {}
@@ -139,14 +125,13 @@ def depth_first_search(state):
 
 def iterative_deepening(state):
     dimensions = state.pop(0)
-    nodes = {}
-    start = time.time()
     limit = 1
 
     goal_node = None
 
     start = time.time()
     while True:
+        nodes = {}
         goal_node = search(clone_state(state), "DFS", nodes, limit=limit)
         if goal_node is not None:
             end = time.time()
@@ -283,12 +268,27 @@ def random_walks(state, executions):
         print "\n" + str(move) + "\n"
         display_state(dimensions, clone_state(state))
 
+def load_file(filename):
+
+    state = []
+    with open(filename, 'r') as f:
+        for line in f:
+            stripped_line = line.replace(',', ' ').strip().split()
+            sanitized_line = [int(val) for val in stripped_line]
+            state.append(sanitized_line)
+
+    return state
+
+#def depth_limited_search(state, limit):
+
 def main():
-    if len(sys.argv) > 1:
-        filename = sys.argv[1]
-        load_file(filename)
-    else:
-        print "Please specify a file to load"
+    level_0 = load_file('SBP-level0.txt')
+    level_1 = load_file('SBP-level1.txt')
+
+    random_walks(clone_state(level_0), 3)
+    breadth_first_search(clone_state(level_1))
+    depth_first_search(clone_state(level_1))
+    iterative_deepening(clone_state(level_1))
 
 if __name__ == '__main__':
     main()
