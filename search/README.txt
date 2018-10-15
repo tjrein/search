@@ -31,6 +31,6 @@
         This will simply run "python search.py"
         My main function loads both sliding block puzzles included in the directory
 
-        Excute permissions should be granted on the bash script, but additional ways to invoke the program are as follows: 
+        Execute permissions should be granted on the bash script, but additional ways to invoke the program are as follows:
             - "bash hw1.sh"
             - "python search.py"
