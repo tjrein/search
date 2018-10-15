@@ -77,7 +77,6 @@ def get_all_pieces(state):
                     pieces[piece].append((i, j))
                 else:
                     pieces[piece] = [(i, j)]
-
     return pieces
 
 def validate_moves(state):
@@ -177,8 +176,10 @@ def search(state, method, nodes, limit=None):
             possible_state = apply_move_clone(current_state, move)
             possible_state_normalized = normalize_state(clone_state(possible_state))
 
+            #check if child state is already present in explored and frontier
             if not repeat_state(explored, possible_state_normalized) and not repeat_state(frontier, possible_state_normalized):
-                #if not in explored and fringe, add nodes to fringe
+
+                #add new node to frontier
                 node_id += 1
                 nodes[node_id] = {
                     "state": possible_state,
@@ -190,7 +191,7 @@ def search(state, method, nodes, limit=None):
                 frontier.append(nodes[node_id])
 
         #cuttoff for iterative deepening
-        #If node depth has reached limit, no additional elements will be on fringe
+        #If node depth has reached limit, no additional elements will be on frontier
         if not frontier:
             return None
 
@@ -198,8 +199,9 @@ def output_path(nodes, node_id, dimensions, elapsed_time):
     actions = []
     finished_state = nodes[node_id]["state"]
 
-    print
-    while nodes[node_id]["parent"] is not None:
+    print #print a newline for better readability between entries
+
+    while nodes[node_id]["parent"] is not None: #trace back to root node
         actions.append(nodes[node_id]["action"])
         node_id = nodes[node_id]["parent"]
 
