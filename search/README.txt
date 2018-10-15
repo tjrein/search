@@ -3,11 +3,11 @@
     Email: tr557@drexel.edu
 
 ==== Description ====
-    This program implements various search algoritms to solve a sliding block puzzle
+    This program implements various search algorithms to solve a sliding block puzzle
 
 ==== Directory Contents ====
     * search.py
-        - source code for search algoritihms 
+        - source code for search algorithms
 
     * SBP-level0.txt
         - level used for random walks
