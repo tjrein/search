@@ -128,7 +128,6 @@ def iterative_deepening(state):
     goal_node = None
 
     start = time.time()
-
     #Keep increasing limit until a goal state is found
     while True:
         nodes = {}
