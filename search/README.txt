@@ -18,8 +18,8 @@
         - the main function in search.py loads this file from the current directory
 
     * hw1.sh
-        - a simple bash script that executes "search.py"
-        - It simply call "python search.py"
+        - a simple bash script that runs the program
+        - It simply calls "python search.py"
 
     * output-hw1.txt
         - redirected output from "search.py" generated on tux
