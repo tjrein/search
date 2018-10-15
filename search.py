@@ -1,7 +1,6 @@
 from copy import deepcopy
 from collections import deque
 import random
-import sys
 import time
 
 def is_valid_move(piece_inds, pattern, state, piece):
@@ -11,6 +10,9 @@ def is_valid_move(piece_inds, pattern, state, piece):
         potential_move = state[new_row][new_col]
         win_condition = piece is 2 and potential_move is -1
 
+        #can only move if there is an open space
+        #since pieces can span multiple spaces, encountering piece of same type is okay
+        #only 2 can enter a space with -1
         if potential_move != 0 and potential_move != state[row][col] and not win_condition:
             return False
 
@@ -32,9 +34,13 @@ def apply_move(state, move):
     for ind in indices:
         row, col = ind
         new_row, new_col = [row+pattern[0], col+pattern[1]]
+
+        #since pieces may be vertical or horizontal
+        #set all to 0 and then update
         state[row][col] = 0
         update_piece_inds.append((new_row, new_col))
 
+    #update board with the new piece indices
     for ind in update_piece_inds:
         row, col = ind
         state[row][col] = piece
@@ -46,6 +52,7 @@ def check_move_for_piece(state, piece):
     return valid_moves
 
 def get_move_pattern(direction):
+    #increments or decrements row/col based on direction
     move_patterns = {
         'u': [-1, 0],
         'd': [1, 0],
@@ -62,6 +69,7 @@ def check_possible_moves(piece, piece_inds, state):
     for direction in directions:
         pattern = get_move_pattern(direction)
 
+        #check if a given piece can be moved in a particular direction
         if is_valid_move(piece_inds, pattern, state, piece):
             moves.append((piece, direction))
 
@@ -70,6 +78,7 @@ def check_possible_moves(piece, piece_inds, state):
 def get_all_pieces(state):
     pieces = {}
 
+    #grabs indices for in-play pieces
     for i, row in enumerate(state):
         for j, piece in enumerate(row):
             if piece > 1:
@@ -105,7 +114,7 @@ def clone_state(state):
 def general_search(state, method):
     dimensions = state.pop(0)
     nodes = {}
-    
+
     start = time.time()
     goal_node = search(clone_state(state), method, nodes)
     end = time.time()
@@ -116,7 +125,6 @@ def general_search(state, method):
 def iterative_deepening(state):
     dimensions = state.pop(0)
     limit = 1
-
     goal_node = None
 
     start = time.time()
@@ -149,7 +157,10 @@ def search(state, method, nodes, limit=None):
     nodes[0] = current_node
     frontier.append(current_node)
 
-    while frontier:
+    while True:
+        if not frontier:
+            return None
+
         #use queue if BFS, stack if DFS
         if method == "BFS":
             current_node = frontier.popleft()
@@ -159,9 +170,8 @@ def search(state, method, nodes, limit=None):
         parent_id = current_node["id"]
         depth = current_node["depth"]
         current_state = current_node["state"]
-        normalized_state = clone_state(current_state)
 
-        if is_complete(normalized_state):
+        if is_complete(current_state):
             return current_node
 
         explored.append(current_node)
@@ -190,17 +200,11 @@ def search(state, method, nodes, limit=None):
                 }
                 frontier.append(nodes[node_id])
 
-        #cuttoff for iterative deepening
-        #If node depth has reached limit, no additional elements will be on frontier
-        if not frontier:
-            return None
-
 def output_path(nodes, node_id, dimensions, elapsed_time):
     actions = []
     finished_state = nodes[node_id]["state"]
 
     print #print a newline for better readability between entries
-
     while nodes[node_id]["parent"] is not None: #trace back to root node
         actions.append(nodes[node_id]["action"])
         node_id = nodes[node_id]["parent"]
@@ -215,6 +219,11 @@ def output_path(nodes, node_id, dimensions, elapsed_time):
 
 def repeat_state(nodes, found_state):
     normal_found_state = normalize_state(found_state)
+
+    #Ideally, this should check to make sure nodes are repeated instead of just states,
+    #since nodes can have the same state if on a different path.
+    #I couldn't find a good way to compare the equality of two nodes without getting my DFS stuck in a loop
+
     for node in nodes:
         if is_same_state(normalize_state(node["state"]), normal_found_state):
             return True
@@ -263,7 +272,7 @@ def random_walks(state, executions):
         #select random move from list
         rand_int = random.randint(0, len(possible_moves) - 1)
         move = possible_moves[rand_int]
-        
+
         #execute move
         apply_move(state, move)
 
@@ -273,7 +282,7 @@ def random_walks(state, executions):
         #display move and resulting state
         print "\n" + str(move) + "\n"
         display_state(dimensions, state)
-       
+
         #exit if puzzle is complete, otherwise continue next execution
         if is_complete(normal_state):
             return
@@ -292,7 +301,7 @@ def main():
     #load files
     level_0 = load_file('SBP-level0.txt')
     level_1 = load_file('SBP-level1.txt')
-    
+
     #random walks
     random_walks(clone_state(level_0), 3)
 
