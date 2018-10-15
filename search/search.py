@@ -54,16 +54,16 @@ def check_move_for_piece(state, piece):
 def get_move_pattern(direction):
     #increments or decrements row/col based on direction
     move_patterns = {
-        'u': [-1, 0],
-        'd': [1, 0],
-        'l': [0, -1],
-        'r': [0, 1]
+        'up': [-1, 0],
+        'down': [1, 0],
+        'left': [0, -1],
+        'right': [0, 1]
     }[direction]
 
     return move_patterns
 
 def check_possible_moves(piece, piece_inds, state):
-    directions = ('u', 'd', 'l', 'r')
+    directions = ('up', 'down', 'left', 'right')
     moves = []
 
     for direction in directions:
@@ -128,6 +128,8 @@ def iterative_deepening(state):
     goal_node = None
 
     start = time.time()
+
+    #Keep increasing limit until a goal state is found
     while True:
         nodes = {}
         goal_node = search(clone_state(state), "DFS", nodes, limit=limit)
@@ -200,11 +202,15 @@ def search(state, method, nodes, limit=None):
                 }
                 frontier.append(nodes[node_id])
 
+def format_action(action):
+    return "(" + str(action[0]) + ',' + str(action[1]) + ")"
+
 def output_path(nodes, node_id, dimensions, elapsed_time):
     actions = []
     finished_state = nodes[node_id]["state"]
 
     print #print a newline for better readability between entries
+
     while nodes[node_id]["parent"] is not None: #trace back to root node
         actions.append(nodes[node_id]["action"])
         node_id = nodes[node_id]["parent"]
@@ -212,7 +218,7 @@ def output_path(nodes, node_id, dimensions, elapsed_time):
     actions.reverse()
 
     for action in actions:
-        print action
+        print format_action(action)
 
     display_state(dimensions, finished_state)
     print len(nodes), elapsed_time, len(actions)
@@ -280,7 +286,7 @@ def random_walks(state, executions):
         normal_state = normalize_state(state)
 
         #display move and resulting state
-        print "\n" + str(move) + "\n"
+        print "\n" + format_action(move) + "\n"
         display_state(dimensions, state)
 
         #exit if puzzle is complete, otherwise continue next execution
