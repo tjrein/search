@@ -87,8 +87,6 @@ def validate_moves(state):
     for piece, indices in pieces.items():
         possible_moves += check_possible_moves(piece, indices, state)
 
-    possible_moves.reverse()
-
     return possible_moves
 
 def is_complete(state):
@@ -105,21 +103,14 @@ def display_state(dimensions, clone):
 def clone_state(state):
     return deepcopy(state)
 
-def breadth_first_search(state):
+def general_search(state, method):
     dimensions = state.pop(0)
     nodes = {}
+    
     start = time.time()
-    goal_node = search(clone_state(state), "BFS", nodes)
+    goal_node = search(clone_state(state), method, nodes)
     end = time.time()
-    elapsed_time = "{:.2f}".format((end - start))
-    output_path(nodes, goal_node["id"], dimensions, elapsed_time)
 
-def depth_first_search(state):
-    dimensions = state.pop(0)
-    nodes = {}
-    start = time.time()
-    goal_node = search(clone_state(state), "DFS", nodes)
-    end = time.time()
     elapsed_time = "{:.2f}".format((end - start))
     output_path(nodes, goal_node["id"], dimensions, elapsed_time)
 
@@ -160,6 +151,7 @@ def search(state, method, nodes, limit=None):
     frontier.append(current_node)
 
     while frontier:
+        #use queue if BFS, stack if DFS
         if method == "BFS":
             current_node = frontier.popleft()
         if method == "DFS":
@@ -168,23 +160,26 @@ def search(state, method, nodes, limit=None):
         parent_id = current_node["id"]
         depth = current_node["depth"]
         current_state = current_node["state"]
+        normalized_state = clone_state(current_state)
 
-        if is_complete(current_state):
+        if is_complete(normalized_state):
             return current_node
 
         explored.append(current_node)
 
+        #For IDS, don't expand if the depth of the node is at the limit
         if depth is limit:
             continue
 
+        #expand children
         possible_moves = validate_moves(clone_state(current_state))
-
         for move in possible_moves:
             possible_state = apply_move_clone(current_state, move)
+            possible_state_normalized = normalize_state(clone_state(possible_state))
 
-            if not repeat_state(explored, clone_state(possible_state)) and not repeat_state(frontier, clone_state(possible_state)):
+            if not repeat_state(explored, possible_state_normalized) and not repeat_state(frontier, possible_state_normalized):
+                #if not in explored and fringe, add nodes to fringe
                 node_id += 1
-
                 nodes[node_id] = {
                     "state": possible_state,
                     "parent": parent_id,
@@ -192,9 +187,10 @@ def search(state, method, nodes, limit=None):
                     "id": node_id,
                     "depth": depth + 1
                 }
-
                 frontier.append(nodes[node_id])
 
+        #cuttoff for iterative deepening
+        #If node depth has reached limit, no additional elements will be on fringe
         if not frontier:
             return None
 
@@ -216,8 +212,9 @@ def output_path(nodes, node_id, dimensions, elapsed_time):
     print len(nodes), elapsed_time, len(actions)
 
 def repeat_state(nodes, found_state):
+    normal_found_state = normalize_state(found_state)
     for node in nodes:
-        if is_same_state(normalize_state(node["state"]), normalize_state(found_state)):
+        if is_same_state(normalize_state(node["state"]), normal_found_state):
             return True
     return False
 
@@ -254,22 +251,32 @@ def swap_index(ind_1, ind_2, state):
 def random_walks(state, executions):
     dimensions = state.pop(0)
 
+    #initial starting state
     display_state(dimensions, state)
+
     for i in range(executions):
-        if is_complete(state):
+        #get moves
+        possible_moves = validate_moves(state)
+
+        #select random move from list
+        rand_int = random.randint(0, len(possible_moves) - 1)
+        move = possible_moves[rand_int]
+        
+        #execute move
+        apply_move(state, move)
+
+        #normalize game state
+        normal_state = normalize_state(state)
+
+        #display move and resulting state
+        print "\n" + str(move) + "\n"
+        display_state(dimensions, state)
+       
+        #exit if puzzle is complete, otherwise continue next execution
+        if is_complete(normal_state):
             return
 
-        valid_moves = validate_moves(state)
-        rand_int = random.randint(0, len(valid_moves) - 1)
-
-        move = valid_moves[rand_int]
-
-        apply_move(state, move)
-        print "\n" + str(move) + "\n"
-        display_state(dimensions, clone_state(state))
-
 def load_file(filename):
-
     state = []
     with open(filename, 'r') as f:
         for line in f:
@@ -279,15 +286,21 @@ def load_file(filename):
 
     return state
 
-#def depth_limited_search(state, limit):
-
 def main():
+    #load files
     level_0 = load_file('SBP-level0.txt')
     level_1 = load_file('SBP-level1.txt')
-
+    
+    #random walks
     random_walks(clone_state(level_0), 3)
-    breadth_first_search(clone_state(level_1))
-    depth_first_search(clone_state(level_1))
+
+    #breadth first search
+    general_search(clone_state(level_1), "BFS")
+
+    #depth first search
+    general_search(clone_state(level_1), "DFS")
+
+    #iterative deepening
     iterative_deepening(clone_state(level_1))
 
 if __name__ == '__main__':
